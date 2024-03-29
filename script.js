@@ -1,3 +1,4 @@
+//your JS code here. If required.
 const output = document.getElementById("output");
 const btn = document.getElementById("download-images-button");
 
@@ -7,39 +8,34 @@ const images = [
   { url: "https://picsum.photos/id/239/200/300" },
 ];
 
-// Function to download an image
-const downloadImage = (image) => {
+btn.addEventListener("click", downloadAndDisplayImages);
+
+function downloadAndDisplayImages() {
+  Promise.all(images.map(downloadImage))
+    .then(displayImages)
+    .catch((error) => console.error(error));
+}
+
+function downloadImage(image) {
   return new Promise((resolve, reject) => {
-    const imgElement = new Image();
-    imgElement.src = image.url;
-
-    imgElement.onload = () => {
-      resolve(imgElement);
-    };
-
-    imgElement.onerror = () => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () =>
       reject(new Error(`Failed to load image's URL: ${image.url}`));
-    };
+    img.src = image.url;
   });
-};
+}
 
-// Function to download all images in parallel
-const downloadImagesParallel = async () => {
-  try {
-    const downloadedImages = await Promise.all(images.map(downloadImage));
-    displayImages(downloadedImages);
-  } catch (error) {
-    console.error(error.message);
-  }
-};
-
-// Function to display the images in the output div
-const displayImages = (images) => {
+function displayImages(images) {
   output.innerHTML = "";
   images.forEach((img) => {
-    output.appendChild(img);
+    const link = document.createElement("a");
+    link.href = img.src;
+    link.download = true;
+    const imgElement = document.createElement("img");
+    imgElement.src = img.src;
+    imgElement.alt = "Downloaded Image";
+    link.appendChild(imgElement);
+    output.appendChild(link);
   });
-};
-
-// Event listener for the button click
-btn.addEventListener("click", downloadImagesParallel);
+}
